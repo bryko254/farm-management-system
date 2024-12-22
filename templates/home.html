@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+    <div class="jumbotron">
+        <h1 class="display-4">Welcome back, {{ user.username }}!</h1>
+        <p class="lead">Manage your farm operations efficiently with our comprehensive farm management system.</p>
+        <hr class="my-4">
+    </div>
+
+    <!-- Quick Stats Section -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-map-marked-alt fa-2x mb-2 text-primary"></i>
+                    <h6 class="card-subtitle mb-2 text-muted">Total Fields</h6>
+                    <h3 class="card-title mb-0">{{ field_count|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-seedling fa-2x mb-2 text-success"></i>
+                    <h6 class="card-subtitle mb-2 text-muted">Active Crops</h6>
+                    <h3 class="card-title mb-0">{{ crop_count|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-horse fa-2x mb-2 text-info"></i>
+                    <h6 class="card-subtitle mb-2 text-muted">Livestock Count</h6>
+                    <h3 class="card-title mb-0">{{ livestock_count|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-tractor fa-2x mb-2 text-warning"></i>
+                    <h6 class="card-subtitle mb-2 text-muted">Equipment Items</h6>
+                    <h3 class="card-title mb-0">{{ equipment_count|default:"0" }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Cards Section -->
+     
+    <div class="row">
+        <!-- Land Management -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-map-marked-alt me-2 text-primary"></i>Land Management
+                    </h5>
+                    <p class="card-text">Manage your fields, soil composition, and irrigation systems.</p>
+                    <a href="{% url 'land_management:field_list' %}" class="btn btn-primary">
+                        <i class="fas fa-chevron-right"></i> View Fields
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crop Management -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-seedling me-2 text-success"></i>Crop Management
+                    </h5>
+                    <p class="card-text">Track your crops, plan harvests, and monitor growth stages.</p>
+                    <a href="{% url 'crop_management:crop_list' %}" class="btn btn-success">
+                        <i class="fas fa-chevron-right"></i> View Crops
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Livestock -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-horse me-2 text-info"></i>Livestock Management
+                    </h5>
+                    <p class="card-text">Manage your livestock records, health tracking, and breeding information.</p>
+                    <a href="{% url 'livestock:animal_list' %}" class="btn btn-info text-white">
+                        <i class="fas fa-chevron-right"></i> View Livestock
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equipment -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-tractor me-2 text-warning"></i>Equipment Management
+                    </h5>
+                    <p class="card-text">Keep track of your farm equipment and maintenance schedules.</p>
+                    <a href="{% url 'equipment:equipment_list' %}" class="btn btn-warning">
+                        <i class="fas fa-chevron-right"></i> View Equipment
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Finance -->
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-dollar-sign me-2 text-success"></i>Financial Management
+                    </h5>
+                    <p class="card-text">Monitor your farm's financial health and track expenses.</p>
+                    <a href="{% url 'finance:finance_dashboard' %}" class="btn btn-success">
+                        <i class="fas fa-chevron-right"></i> View Finances
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="jumbotron text-center">
+        <h1 class="display-4">Welcome to Farm Management System</h1>
+        <p class="lead">A comprehensive solution for managing your farm operations efficiently.</p>
+        <hr class="my-4">
+        <p>Please log in to access the system or create a new account if you haven't registered yet.</p>
+        <div class="mt-4">
+            <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg me-3">
+                <i class="fas fa-sign-in-alt me-2"></i>Login
+            </a>
+            <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Register
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

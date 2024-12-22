@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Fields - Farm Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Field Management</h1>
+        <a href="{% url 'land_management:field_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add New Field
+        </a>
+    </div>
+
+    {% if fields %}
+        <div class="row">
+            {% for field in fields %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ field.name }}</h5>
+                            <p class="card-text">
+                                <strong>Size:</strong> {{ field.size }} acres<br>
+                                <strong>Location:</strong> {{ field.location }}<br>
+                                <strong>Soil Type:</strong> {{ field.soil_type }}
+                            </p>
+                            <div class="mt-3">
+                                <a href="{% url 'land_management:field_detail' pk=field.pk %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                                <a href="{% url 'land_management:field_update' pk=field.pk %}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                <a href="{% url 'land_management:field_delete' pk=field.pk %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </a>
+                                <a href="{% url 'land_management:soil_analysis_create' field_pk=field.pk %}" class="btn btn-success btn-sm">
+                                    <i class="fas fa-flask"></i> Add Soil Analysis
+                                </a>
+                                <a href="{% url 'land_management:irrigation_create' field_pk=field.pk %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-tint"></i> Add Irrigation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p>No fields available. Add your first field to get started!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

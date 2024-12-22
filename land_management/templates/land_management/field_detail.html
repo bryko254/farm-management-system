@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ field.name }} - Farm Management System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'land_management:field_list' %}">Fields</a></li>
+            <li class="breadcrumb-item active">{{ field.name }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ field.name }}</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'land_management:field_update' pk=field.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit Field
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Field Information -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Field Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Size:</strong> {{ field.size }} acres</p>
+                    <p><strong>Location:</strong> {{ field.location }}</p>
+                    <p><strong>Soil Type:</strong> {{ field.soil_type }}</p>
+                    <p><strong>Status:</strong> {% if field.is_active %}Active{% else %}Inactive{% endif %}</p>
+                    {% if field.notes %}
+                        <p><strong>Notes:</strong><br>{{ field.notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Soil Analysis -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Soil Analysis</h5>
+                    <a href="{% url 'land_management:soil_analysis_create' field_pk=field.pk %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Add Analysis
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if soil_analyses %}
+                        {% for analysis in soil_analyses %}
+                            <div class="mb-3">
+                                <h6>Analysis from {{ analysis.test_date }}</h6>
+                                <p class="mb-1">pH Level: {{ analysis.ph_level }}</p>
+                                <p class="mb-1">NPK Levels:</p>
+                                <ul>
+                                    <li>Nitrogen: {{ analysis.nitrogen_level }} ppm</li>
+                                    <li>Phosphorus: {{ analysis.phosphorus_level }} ppm</li>
+                                    <li>Potassium: {{ analysis.potassium_level }} ppm</li>
+                                </ul>
+                                <p class="mb-1">Organic Matter: {{ analysis.organic_matter }}%</p>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No soil analysis records available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Irrigation Systems -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Irrigation Systems</h5>
+                    <a href="{% url 'land_management:irrigation_create' field_pk=field.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add System
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if irrigation_systems %}
+                        {% for system in irrigation_systems %}
+                            <div class="mb-3">
+                                <h6>{{ system.get_irrigation_type_display }}</h6>
+                                <p class="mb-1">Water Source: {{ system.water_source }}</p>
+                                <p class="mb-1">Flow Rate: {{ system.flow_rate }} gpm</p>
+                                <p class="mb-1">Coverage: {{ system.coverage_area }} acres</p>
+                                <p class="mb-1">Status: {% if system.is_active %}Active{% else %}Inactive{% endif %}</p>
+                                <a href="{% url 'land_management:irrigation_schedule_create' system_pk=system.pk %}" class="btn btn-info btn-sm">
+                                    <i class="fas fa-calendar"></i> Add Schedule
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p>No irrigation systems installed.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

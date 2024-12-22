@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ animal.name|default:animal.tag_number }} - Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <!-- Main Animal Information -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        {{ animal.name|default:animal.tag_number }}
+                        <span class="badge {% if animal.status == 'HEALTHY' %}bg-success
+                                         {% elif animal.status == 'SICK' %}bg-danger
+                                         {% elif animal.status == 'PREGNANT' %}bg-info
+                                         {% elif animal.status == 'LACTATING' %}bg-primary
+                                         {% else %}bg-warning{% endif %}">
+                            {{ animal.get_status_display }}
+                        </span>
+                    </h4>
+                    <div class="btn-group">
+                        <a href="{% url 'livestock:animal_update' pk=animal.pk %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'livestock:animal_delete' pk=animal.pk %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Basic Information</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Tag Number</dt>
+                                <dd class="col-sm-8">{{ animal.tag_number }}</dd>
+
+                                <dt class="col-sm-4">Species</dt>
+                                <dd class="col-sm-8">{{ animal.get_species_display }}</dd>
+
+                                <dt class="col-sm-4">Breed</dt>
+                                <dd class="col-sm-8">{{ animal.breed }}</dd>
+
+                                <dt class="col-sm-4">Gender</dt>
+                                <dd class="col-sm-8">{{ animal.get_gender_display }}</dd>
+
+                                <dt class="col-sm-4">Weight</dt>
+                                <dd class="col-sm-8">{{ animal.weight }} kg</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Additional Details</h5>
+                            <dl class="row">
+                                <dt class="col-sm-4">Birth Date</dt>
+                                <dd class="col-sm-8">{{ animal.date_of_birth }}</dd>
+
+                                <dt class="col-sm-4">Age</dt>
+                                <dd class="col-sm-8">{{ animal.date_of_birth|timesince }} old</dd>
+
+                                {% if animal.mother %}
+                                <dt class="col-sm-4">Mother</dt>
+                                <dd class="col-sm-8">
+                                    <a href="{% url 'livestock:animal_detail' pk=animal.mother.pk %}">
+                                        {{ animal.mother.tag_number }}
+                                    </a>
+                                </dd>
+                                {% endif %}
+
+                                {% if animal.father %}
+                                <dt class="col-sm-4">Father</dt>
+                                <dd class="col-sm-8">
+                                    <a href="{% url 'livestock:animal_detail' pk=animal.father.pk %}">
+                                        {{ animal.father.tag_number }}
+                                    </a>
+                                </dd>
+                                {% endif %}
+                            </dl>
+                        </div>
+                    </div>
+
+                    {% if animal.notes %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5>Notes</h5>
+                            <p>{{ animal.notes|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Health Records -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Health Records</h5>
+                    <a href="{% url 'livestock:health_record_create' animal_pk=animal.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Health Record
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if health_records %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Condition</th>
+                                    <th>Treatment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in health_records %}
+                                <tr>
+                                    <td>{{ record.date }}</td>
+                                    <td>{{ record.get_record_type_display }}</td>
+                                    <td>{{ record.condition }}</td>
+                                    <td>{{ record.treatment|truncatewords:10 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No health records found.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Production Records -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Production Records</h5>
+                    <a href="{% url 'livestock:production_record_create' animal_pk=animal.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Add Production Record
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if production_records %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Quantity</th>
+                                    <th>Quality</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in production_records %}
+                                <tr>
+                                    <td>{{ record.date }}</td>
+                                    <td>{{ record.get_production_type_display }}</td>
+                                    <td>{{ record.quantity }} {{ record.unit }}</td>
+                                    <td>{{ record.quality_grade }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No production records found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Purchase Information -->
+            {% if animal.purchase_date or animal.purchase_price or animal.supplier %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Purchase Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        {% if animal.purchase_date %}
+                        <dt class="col-sm-5">Purchase Date</dt>
+                        <dd class="col-sm-7">{{ animal.purchase_date }}</dd>
+                        {% endif %}
+
+                        {% if animal.purchase_price %}
+                        <dt class="col-sm-5">Purchase Price</dt>
+                        <dd class="col-sm-7">${{ animal.purchase_price }}</dd>
+                        {% endif %}
+
+                        {% if animal.supplier %}
+                        <dt class="col-sm-5">Supplier</dt>
+                        <dd class="col-sm-7">{{ animal.supplier }}</dd>
+                        {% endif %}
+                    </dl>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Breeding Records -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Breeding History</h5>
+                </div>
+                <div class="card-body">
+                    {% if breeding_records_mother or breeding_records_father %}
+                    {% if breeding_records_mother %}
+                    <h6>As Mother</h6>
+                    <ul class="list-unstyled">
+                        {% for record in breeding_records_mother %}
+                        <li class="mb-2">
+                            <small class="text-muted">{{ record.breeding_date }}</small><br>
+                            with {{ record.father.tag_number }}
+                            {% if record.success %}
+                            <span class="badge bg-success">Success</span>
+                            {% elif record.success == False %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    {% if breeding_records_father %}
+                    <h6>As Father</h6>
+                    <ul class="list-unstyled">
+                        {% for record in breeding_records_father %}
+                        <li class="mb-2">
+                            <small class="text-muted">{{ record.breeding_date }}</small><br>
+                            with {{ record.mother.tag_number }}
+                            {% if record.success %}
+                            <span class="badge bg-success">Success</span>
+                            {% elif record.success == False %}
+                            <span class="badge bg-danger">Failed</span>
+                            {% else %}
+                            <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">No breeding records found.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">System Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Created</dt>
+                        <dd class="col-sm-7">{{ animal.created_at }}</dd>
+
+                        <dt class="col-sm-5">Last Updated</dt>
+                        <dd class="col-sm-7">{{ animal.updated_at }}</dd>
+
+                        <dt class="col-sm-5">Status</dt>
+                        <dd class="col-sm-7">
+                            {% if animal.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'livestock:animal_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+    </div>
+</div>
+{% endblock %}

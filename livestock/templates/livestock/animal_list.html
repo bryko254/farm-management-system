@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Livestock Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Livestock Management</h2>
+            <p class="text-muted">Total Animals: {{ total_count }}</p>
+        </div>
+        <div>
+            <a href="{% url 'livestock:animal_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Animal
+            </a>
+            <div class="btn-group ms-2">
+                <a href="{% url 'livestock:health_record_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-heartbeat"></i> Health Records
+                </a>
+                <a href="{% url 'livestock:production_record_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-chart-line"></i> Production
+                </a>
+                <a href="{% url 'livestock:breeding_record_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-baby"></i> Breeding
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if animals %}
+    <div class="row">
+        {% for animal in animals %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <span class="badge {% if animal.status == 'HEALTHY' %}bg-success
+                                     {% elif animal.status == 'SICK' %}bg-danger
+                                     {% elif animal.status == 'PREGNANT' %}bg-info
+                                     {% elif animal.status == 'LACTATING' %}bg-primary
+                                     {% else %}bg-warning{% endif %} float-end">
+                        {{ animal.get_status_display }}
+                    </span>
+                    <h5 class="card-title mb-0">{{ animal.tag_number }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <strong>Name:</strong> {{ animal.name|default:"Unnamed" }}<br>
+                        <strong>Species:</strong> {{ animal.get_species_display }}<br>
+                        <strong>Breed:</strong> {{ animal.breed }}<br>
+                        <strong>Gender:</strong> {{ animal.get_gender_display }}<br>
+                        <strong>Age:</strong> {{ animal.date_of_birth|timesince }} old<br>
+                        <strong>Weight:</strong> {{ animal.weight }} kg
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100">
+                        <a href="{% url 'livestock:animal_detail' pk=animal.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <a href="{% url 'livestock:animal_update' pk=animal.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'livestock:animal_delete' pk=animal.pk %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        No animals found. Click the "Add New Animal" button to get started.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
