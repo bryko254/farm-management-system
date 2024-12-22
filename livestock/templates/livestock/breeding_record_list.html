@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Breeding Records{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-baby text-primary me-2"></i>Breeding Records</h2>
+        <a href="{% url 'livestock:add_breeding_record' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Add Breeding Record
+        </a>
+    </div>
+
+    {% if breeding_records %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Mother</th>
+                    <th>Father</th>
+                    <th>Breeding Date</th>
+                    <th>Expected Due Date</th>
+                    <th>Actual Birth Date</th>
+                    <th>Offspring</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in breeding_records %}
+                <tr>
+                    <td>
+                        <a href="{% url 'livestock:animal_detail' pk=record.mother.pk %}">
+                            {{ record.mother.name|default:record.mother.tag_number }}
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{% url 'livestock:animal_detail' pk=record.father.pk %}">
+                            {{ record.father.name|default:record.father.tag_number }}
+                        </a>
+                    </td>
+                    <td>{{ record.breeding_date }}</td>
+                    <td>{{ record.expected_due_date }}</td>
+                    <td>{{ record.actual_birth_date|default:"-" }}</td>
+                    <td>{{ record.number_of_offspring|default:"0" }}</td>
+                    <td>
+                        {% if record.success == None %}
+                            <span class="badge bg-warning">Pending</span>
+                        {% elif record.success %}
+                            <span class="badge bg-success">Successful</span>
+                        {% else %}
+                            <span class="badge bg-danger">Failed</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{% url 'livestock:edit_breeding_record' pk=record.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'livestock:delete_breeding_record' pk=record.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <i class="fas fa-info-circle me-2"></i>No breeding records found. Add your first breeding record using the button above.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

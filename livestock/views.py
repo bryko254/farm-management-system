@@ -5,6 +5,9 @@ from .models import Animal, HealthRecord, Production, Breeding
 from .forms import AnimalForm, HealthRecordForm, ProductionForm, BreedingForm
 from django.db.models import Q
 import logging
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
 
 logger = logging.getLogger('livestock')
 
@@ -145,6 +148,42 @@ def animal_delete(request, pk):
             messages.error(request, "An error occurred while deleting the animal.")
     return render(request, 'livestock/animal_confirm_delete.html', {'animal': animal})
 
+class HealthRecordListView(LoginRequiredMixin, ListView):
+    model = HealthRecord
+    template_name = 'livestock/health_record_list.html'
+    context_object_name = 'health_records'
+
+    def get_queryset(self):
+        return HealthRecord.objects.filter(animal__owner=self.request.user).select_related('animal')
+
+class HealthRecordCreateView(LoginRequiredMixin, CreateView):
+    model = HealthRecord
+    form_class = HealthRecordForm
+    template_name = 'livestock/health_record_form.html'
+    success_url = reverse_lazy('livestock:health_record_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['animal'].queryset = Animal.objects.filter(owner=self.request.user, is_active=True)
+        return form
+
+class HealthRecordUpdateView(LoginRequiredMixin, UpdateView):
+    model = HealthRecord
+    form_class = HealthRecordForm
+    template_name = 'livestock/health_record_form.html'
+    success_url = reverse_lazy('livestock:health_record_list')
+
+    def get_queryset(self):
+        return HealthRecord.objects.filter(animal__owner=self.request.user)
+
+class HealthRecordDeleteView(LoginRequiredMixin, DeleteView):
+    model = HealthRecord
+    template_name = 'livestock/health_record_confirm_delete.html'
+    success_url = reverse_lazy('livestock:health_record_list')
+
+    def get_queryset(self):
+        return HealthRecord.objects.filter(animal__owner=self.request.user)
+
 @login_required
 def health_record_list(request):
     logger.info(f"Accessing health record list view - User: {request.user}")
@@ -280,3 +319,96 @@ def breeding_record_create(request):
         'form': form,
         'title': 'Add Breeding Record'
     })
+
+class ProductionRecordListView(LoginRequiredMixin, ListView):
+    model = Production
+    template_name = 'livestock/production_record_list.html'
+    context_object_name = 'production_records'
+
+    def get_queryset(self):
+        return Production.objects.filter(animal__owner=self.request.user).select_related('animal')
+
+class ProductionRecordCreateView(LoginRequiredMixin, CreateView):
+    model = Production
+    form_class = ProductionForm
+    template_name = 'livestock/production_record_form.html'
+    success_url = reverse_lazy('livestock:production_record_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['animal'].queryset = Animal.objects.filter(owner=self.request.user, is_active=True)
+        return form
+
+class ProductionRecordUpdateView(LoginRequiredMixin, UpdateView):
+    model = Production
+    form_class = ProductionForm
+    template_name = 'livestock/production_record_form.html'
+    success_url = reverse_lazy('livestock:production_record_list')
+
+    def get_queryset(self):
+        return Production.objects.filter(animal__owner=self.request.user)
+
+class ProductionRecordDeleteView(LoginRequiredMixin, DeleteView):
+    model = Production
+    template_name = 'livestock/production_record_confirm_delete.html'
+    success_url = reverse_lazy('livestock:production_record_list')
+
+    def get_queryset(self):
+        return Production.objects.filter(animal__owner=self.request.user)
+
+class BreedingRecordListView(LoginRequiredMixin, ListView):
+    model = Breeding
+    template_name = 'livestock/breeding_record_list.html'
+    context_object_name = 'breeding_records'
+
+    def get_queryset(self):
+        from django.db.models import Q
+        return Breeding.objects.filter(
+            Q(mother__owner=self.request.user) | 
+            Q(father__owner=self.request.user)
+        ).select_related('mother', 'father')
+
+class BreedingRecordCreateView(LoginRequiredMixin, CreateView):
+    model = Breeding
+    form_class = BreedingForm
+    template_name = 'livestock/breeding_record_form.html'
+    success_url = reverse_lazy('livestock:breeding_record_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user_animals = Animal.objects.filter(owner=self.request.user, is_active=True)
+        form.fields['mother'].queryset = user_animals.filter(gender='F')
+        form.fields['father'].queryset = user_animals.filter(gender='M')
+        return form
+
+class BreedingRecordUpdateView(LoginRequiredMixin, UpdateView):
+    model = Breeding
+    form_class = BreedingForm
+    template_name = 'livestock/breeding_record_form.html'
+    success_url = reverse_lazy('livestock:breeding_record_list')
+
+    def get_queryset(self):
+        from django.db.models import Q
+        return Breeding.objects.filter(
+            Q(mother__owner=self.request.user) | 
+            Q(father__owner=self.request.user)
+        )
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user_animals = Animal.objects.filter(owner=self.request.user, is_active=True)
+        form.fields['mother'].queryset = user_animals.filter(gender='F')
+        form.fields['father'].queryset = user_animals.filter(gender='M')
+        return form
+
+class BreedingRecordDeleteView(LoginRequiredMixin, DeleteView):
+    model = Breeding
+    template_name = 'livestock/breeding_record_confirm_delete.html'
+    success_url = reverse_lazy('livestock:breeding_record_list')
+
+    def get_queryset(self):
+        from django.db.models import Q
+        return Breeding.objects.filter(
+            Q(mother__owner=self.request.user) | 
+            Q(father__owner=self.request.user)
+        )
