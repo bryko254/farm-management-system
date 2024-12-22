@@ -27,9 +27,9 @@ urlpatterns = [
     path('land/', include('land_management.urls')),
     path('crops/', include('crop_management.urls')),
     path('livestock/', include('livestock.urls')),
-    path('equipment/', include('equipment.urls')),
+    path('equipment/', views.coming_soon, name='equipment'),
+    path('labor/', views.coming_soon, name='labor'),
     path('finance/', include('finance.urls')),
-    path('labor/', include('labor.urls')),
     path('compliance/', include('compliance.urls')),
     path('api-auth/', include('rest_framework.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

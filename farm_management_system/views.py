@@ -16,3 +16,7 @@ def home(request):
         'equipment_count': Equipment.objects.filter(owner=request.user).count(),
     }
     return render(request, 'home.html', context)
+
+@login_required
+def coming_soon(request):
+    return render(request, 'coming_soon.html')
