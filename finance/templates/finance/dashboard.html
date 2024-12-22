@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Finance Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% include 'finance/includes/finance_nav.html' %}
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Finance Dashboard</h2>
+                <div class="btn-group">
+                    <a href="{% url 'finance:add_transaction' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>New Transaction
+                    </a>
+                    <a href="{% url 'finance:add_budget' %}" class="btn btn-success">
+                        <i class="fas fa-chart-pie me-2"></i>New Budget
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Income</h5>
+                    <h3 class="mb-0">KES {{ total_income|floatformat:2 }}</h3>
+                    <small>Last 30 days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Total Expenses</h5>
+                    <h3 class="mb-0">KES {{ total_expenses|floatformat:2 }}</h3>
+                    <small>Last 30 days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card {% if net_balance >= 0 %}bg-primary{% else %}bg-warning{% endif %} text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Net Balance</h5>
+                    <h3 class="mb-0">KES {{ net_balance|floatformat:2 }}</h3>
+                    <small>Last 30 days</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Transactions -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Transactions</h5>
+                    <a href="{% url 'finance:transaction_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                <tr>
+                                    <td>{{ transaction.date }}</td>
+                                    <td>
+                                        <span class="badge {% if transaction.type == 'INCOME' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ transaction.get_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ transaction.category.name }}</td>
+                                    <td>KES {{ transaction.amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No recent transactions found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Budgets -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Active Budgets</h5>
+                    <a href="{% url 'finance:budget_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if active_budgets %}
+                    <div class="list-group list-group-flush">
+                        {% for budget in active_budgets %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1">{{ budget.category.name }}</h6>
+                            <div class="progress mb-2" style="height: 5px;">
+                                {% with spent_percentage=budget.get_spent_percentage %}
+                                <div class="progress-bar {% if spent_percentage > 90 %}bg-danger{% elif spent_percentage > 70 %}bg-warning{% else %}bg-success{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ spent_percentage }}%">
+                                </div>
+                                {% endwith %}
+                            </div>
+                            <small class="text-muted">
+                                KES {{ budget.get_spent_amount|floatformat:2 }} of {{ budget.amount|floatformat:2 }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No active budgets found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

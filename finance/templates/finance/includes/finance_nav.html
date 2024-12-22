@@ -1,0 +1,18 @@
+<nav class="nav nav-pills nav-fill bg-light p-2 rounded mb-4">
+    <a class="nav-link {% if request.resolver_match.url_name == 'finance_dashboard' %}active{% endif %}" 
+       href="{% url 'finance:finance_dashboard' %}">
+        <i class="fas fa-chart-line me-2"></i>Dashboard
+    </a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}" 
+       href="{% url 'finance:transaction_list' %}">
+        <i class="fas fa-exchange-alt me-2"></i>Transactions
+    </a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'category_list' %}active{% endif %}" 
+       href="{% url 'finance:category_list' %}">
+        <i class="fas fa-tags me-2"></i>Categories
+    </a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'budget_list' %}active{% endif %}" 
+       href="{% url 'finance:budget_list' %}">
+        <i class="fas fa-chart-pie me-2"></i>Budgets
+    </a>
+</nav>
