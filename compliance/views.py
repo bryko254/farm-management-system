@@ -1,24 +1,11 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from farm_management_system.crud import crud_views
 
-# Create your views here.
+from .forms import CertificationForm
+from .models import Certification
 
-@login_required
-def compliance_dashboard(request):
-    return render(request, 'compliance/dashboard.html')
-
-@login_required
-def certification_list(request):
-    return render(request, 'compliance/certification_list.html')
-
-@login_required
-def document_list(request):
-    return render(request, 'compliance/document_list.html')
-
-@login_required
-def food_safety_records(request):
-    return render(request, 'compliance/food_safety_records.html')
-
-@login_required
-def environmental_compliance(request):
-    return render(request, 'compliance/environmental_compliance.html')
+(CertificationListView, CertificationCreateView,
+ CertificationUpdateView, CertificationDeleteView) = crud_views(
+    Certification, CertificationForm, app='compliance', prefix='certification',
+    label='Certification', icon='fa-certificate',
+    columns=[('Name', 'name'), ('Issued by', 'issuing_body'), ('Reference', 'reference_number'),
+             ('Issued', 'issue_date'), ('Expires', 'expiry_date'), ('Status', 'status')])

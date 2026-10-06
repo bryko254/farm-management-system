@@ -11,7 +11,7 @@ def field_list(request):
 
 @login_required
 def field_detail(request, pk):
-    field = get_object_or_404(Field, pk=pk, owner=request.user)
+    field = get_object_or_404(Field, pk=pk, owner=request.user, is_active=True)
     soil_analyses = field.soil_analyses.all()
     irrigation_systems = field.irrigation_systems.all()
     context = {
@@ -24,7 +24,7 @@ def field_detail(request, pk):
 @login_required
 def field_create(request):
     if request.method == 'POST':
-        form = FieldForm(request.POST)
+        form = FieldForm(request.POST, user=request.user)
         if form.is_valid():
             field = form.save(commit=False)
             field.owner = request.user
@@ -32,20 +32,20 @@ def field_create(request):
             messages.success(request, 'Field created successfully.')
             return redirect('land_management:field_detail', pk=field.pk)
     else:
-        form = FieldForm()
+        form = FieldForm(user=request.user)
     return render(request, 'land_management/field_form.html', {'form': form, 'title': 'Add New Field'})
 
 @login_required
 def field_update(request, pk):
     field = get_object_or_404(Field, pk=pk, owner=request.user)
     if request.method == 'POST':
-        form = FieldForm(request.POST, instance=field)
+        form = FieldForm(request.POST, instance=field, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Field updated successfully.')
             return redirect('land_management:field_detail', pk=field.pk)
     else:
-        form = FieldForm(instance=field)
+        form = FieldForm(instance=field, user=request.user)
     return render(request, 'land_management/field_form.html', {'form': form, 'title': 'Update Field'})
 
 @login_required
@@ -58,15 +58,10 @@ def field_delete(request, pk):
     return render(request, 'land_management/field_confirm_delete.html', {'field': field})
 
 @login_required
-def soil_analysis_list(request):
-    analyses = SoilAnalysis.objects.filter(field__owner=request.user)
-    return render(request, 'land_management/soil_analysis_list.html', {'analyses': analyses})
-
-@login_required
 def soil_analysis_create(request, field_pk):
     field = get_object_or_404(Field, pk=field_pk, owner=request.user)
     if request.method == 'POST':
-        form = SoilAnalysisForm(request.POST)
+        form = SoilAnalysisForm(request.POST, user=request.user)
         if form.is_valid():
             analysis = form.save(commit=False)
             analysis.field = field
@@ -74,7 +69,7 @@ def soil_analysis_create(request, field_pk):
             messages.success(request, 'Soil analysis added successfully.')
             return redirect('land_management:field_detail', pk=field_pk)
     else:
-        form = SoilAnalysisForm()
+        form = SoilAnalysisForm(user=request.user)
     return render(request, 'land_management/soil_analysis_form.html', {
         'form': form,
         'field': field,
@@ -82,15 +77,10 @@ def soil_analysis_create(request, field_pk):
     })
 
 @login_required
-def irrigation_list(request):
-    irrigation_systems = IrrigationSystem.objects.filter(field__owner=request.user, is_active=True)
-    return render(request, 'land_management/irrigation_list.html', {'irrigation_systems': irrigation_systems})
-
-@login_required
 def irrigation_create(request, field_pk):
     field = get_object_or_404(Field, pk=field_pk, owner=request.user)
     if request.method == 'POST':
-        form = IrrigationSystemForm(request.POST)
+        form = IrrigationSystemForm(request.POST, user=request.user)
         if form.is_valid():
             system = form.save(commit=False)
             system.field = field
@@ -98,7 +88,7 @@ def irrigation_create(request, field_pk):
             messages.success(request, 'Irrigation system added successfully.')
             return redirect('land_management:field_detail', pk=field_pk)
     else:
-        form = IrrigationSystemForm()
+        form = IrrigationSystemForm(user=request.user)
     return render(request, 'land_management/irrigation_form.html', {
         'form': form,
         'field': field,
@@ -109,7 +99,7 @@ def irrigation_create(request, field_pk):
 def irrigation_schedule_create(request, system_pk):
     system = get_object_or_404(IrrigationSystem, pk=system_pk, field__owner=request.user)
     if request.method == 'POST':
-        form = IrrigationScheduleForm(request.POST)
+        form = IrrigationScheduleForm(request.POST, user=request.user)
         if form.is_valid():
             schedule = form.save(commit=False)
             schedule.irrigation_system = system
@@ -117,7 +107,7 @@ def irrigation_schedule_create(request, system_pk):
             messages.success(request, 'Irrigation schedule added successfully.')
             return redirect('land_management:field_detail', pk=system.field.pk)
     else:
-        form = IrrigationScheduleForm()
+        form = IrrigationScheduleForm(user=request.user)
     return render(request, 'land_management/irrigation_schedule_form.html', {
         'form': form,
         'system': system,

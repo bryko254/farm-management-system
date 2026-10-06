@@ -1,24 +1,21 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from farm_management_system.crud import crud_views
 
-# Create your views here.
+from .forms import EquipmentForm
+from .models import Equipment
 
-@login_required
-def equipment_list(request):
-    return render(request, 'equipment/equipment_list.html')
+COLUMNS = [
+    ('Name', 'name'), ('Condition', 'condition'), ('Purchased', 'purchase_date'),
+    ('Last maintenance', 'last_maintenance'), ('Next maintenance', 'next_maintenance'),
+]
 
-@login_required
-def equipment_detail(request, pk):
-    return render(request, 'equipment/equipment_detail.html')
+EquipmentListView, EquipmentCreateView, EquipmentUpdateView, EquipmentDeleteView = crud_views(
+    Equipment, EquipmentForm, app='equipment', prefix='equipment', label='Equipment',
+    columns=COLUMNS, icon='fa-tractor')
 
-@login_required
-def equipment_create(request):
-    return render(request, 'equipment/equipment_form.html')
 
-@login_required
-def maintenance_schedule(request):
-    return render(request, 'equipment/maintenance_schedule.html')
+class MaintenanceScheduleView(EquipmentListView):
+    """Equipment with a maintenance date, soonest first."""
+    template_name = 'equipment/maintenance_schedule.html'
 
-@login_required
-def fuel_tracking(request):
-    return render(request, 'equipment/fuel_tracking.html')
+    def get_queryset(self):
+        return super().get_queryset().filter(next_maintenance__isnull=False).order_by('next_maintenance')

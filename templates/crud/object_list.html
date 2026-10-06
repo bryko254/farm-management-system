@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load crud %}
+
+{% block title %}{{ plural }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas {{ icon }} me-2"></i>{{ plural }}</h2>
+    <div class="d-flex gap-2">
+        {% block list_actions %}{% endblock %}
+        <a href="{% url urls.create %}" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add {{ label }}</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if object_list %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        {% for header, attr in columns %}<th>{{ header }}</th>{% endfor %}
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in object_list %}
+                    <tr>
+                        {% for header, attr in columns %}<td>{{ obj|cell:attr }}</td>{% endfor %}
+                        <td class="text-end">
+                            <a href="{% url urls.update obj.pk %}" class="btn btn-sm btn-outline-primary" aria-label="Edit"><i class="fas fa-edit"></i></a>
+                            <a href="{% url urls.delete obj.pk %}" class="btn btn-sm btn-outline-danger" aria-label="Delete"><i class="fas fa-trash"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include 'includes/pagination.html' %}
+        {% else %}
+        <p class="text-muted mb-0">Nothing here yet. Use “Add {{ label }}” to create the first one.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

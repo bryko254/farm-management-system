@@ -1,13 +1,16 @@
 from django.urls import path
+
 from . import views
 
 app_name = 'labor'
 
 urlpatterns = [
-    path('', views.employee_list, name='employee_list'),
-    path('<int:pk>/', views.employee_detail, name='employee_detail'),
-    path('create/', views.employee_create, name='employee_create'),
-    path('schedules/', views.work_schedules, name='work_schedules'),
-    path('tasks/', views.task_management, name='task_management'),
-    path('performance/', views.performance_tracking, name='performance_tracking'),
+    path('', views.WorkerListView.as_view(), name='worker_list'),
+    path('add/', views.WorkerCreateView.as_view(), name='worker_create'),
+    path('<int:pk>/edit/', views.WorkerUpdateView.as_view(), name='worker_update'),
+    path('<int:pk>/delete/', views.WorkerDeleteView.as_view(), name='worker_delete'),
+    path('tasks/', views.TaskListView.as_view(), name='task_list'),
+    path('tasks/add/', views.TaskCreateView.as_view(), name='task_create'),
+    path('tasks/<int:pk>/edit/', views.TaskUpdateView.as_view(), name='task_update'),
+    path('tasks/<int:pk>/delete/', views.TaskDeleteView.as_view(), name='task_delete'),
 ]

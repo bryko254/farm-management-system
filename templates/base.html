@@ -35,18 +35,23 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'equipment' %}">
+                            <a class="nav-link" href="{% url 'equipment:equipment_list' %}">
                                 <i class="fas fa-tractor me-1"></i>Equipment
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'labor' %}">
+                            <a class="nav-link" href="{% url 'labor:worker_list' %}">
                                 <i class="fas fa-users me-1"></i>Labor
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'finance:finance_dashboard' %}">
                                 <i class="fas fa-dollar-sign me-1"></i>Finance
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'compliance:certification_list' %}">
+                                <i class="fas fa-certificate me-1"></i>Compliance
                             </a>
                         </li>
                     {% endif %}
@@ -67,11 +72,13 @@
                                 <i class="fas fa-sign-in-alt me-1"></i>Login
                             </a>
                         </li>
+                        {% if allow_registration %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'accounts:register' %}">
                                 <i class="fas fa-user-plus me-1"></i>Register
                             </a>
                         </li>
+                        {% endif %}
                     {% endif %}
                 </ul>
             </div>
