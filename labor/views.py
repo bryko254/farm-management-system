@@ -1,28 +1,15 @@
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from farm_management_system.crud import crud_views
 
-# Create your views here.
+from .forms import TaskForm, WorkerForm
+from .models import Task, Worker
 
-@login_required
-def employee_list(request):
-    return render(request, 'labor/employee_list.html')
+WorkerListView, WorkerCreateView, WorkerUpdateView, WorkerDeleteView = crud_views(
+    Worker, WorkerForm, app='labor', prefix='worker', label='Worker', icon='fa-users',
+    columns=[('Name', 'name'), ('Role', 'role'), ('Phone', 'phone'),
+             ('Hired', 'hire_date'), ('Daily wage (KES)', 'daily_wage'), ('Active', 'is_active')])
 
-@login_required
-def employee_detail(request, pk):
-    return render(request, 'labor/employee_detail.html')
-
-@login_required
-def employee_create(request):
-    return render(request, 'labor/employee_form.html')
-
-@login_required
-def work_schedules(request):
-    return render(request, 'labor/work_schedules.html')
-
-@login_required
-def task_management(request):
-    return render(request, 'labor/task_management.html')
-
-@login_required
-def performance_tracking(request):
-    return render(request, 'labor/performance_tracking.html')
+TaskListView, TaskCreateView, TaskUpdateView, TaskDeleteView = crud_views(
+    Task, TaskForm, app='labor', prefix='task', label='Task', icon='fa-tasks',
+    select=('assigned_to',),
+    columns=[('Title', 'title'), ('Assigned to', 'assigned_to'), ('Due', 'due_date'),
+             ('Priority', 'priority'), ('Status', 'status')])

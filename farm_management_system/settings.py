@@ -11,23 +11,36 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-import os
-import logging.config
+import environ
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
+env = environ.Env(
+    DJANGO_DEBUG=(bool, False),
+    DJANGO_ALLOWED_HOSTS=(list, []),
+    DJANGO_CSRF_TRUSTED_ORIGINS=(list, []),
+    DJANGO_SECURE_SSL=(bool, True),
+    DJANGO_ALLOW_REGISTRATION=(bool, True),
+)
+if (BASE_DIR / '.env').exists():
+    environ.Env.read_env(BASE_DIR / '.env')
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-g$$cmo=3rt-xr6yueq57hh6#dl(+xz2yfoe3r9_fk4km9@u@%c'
+DEBUG = env('DJANGO_DEBUG')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# The key must be supplied in production; a throwaway one is allowed only in DEBUG.
+SECRET_KEY = env('DJANGO_SECRET_KEY', default='')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'insecure-dev-only-key'
+    else:
+        raise ImproperlyConfigured('DJANGO_SECRET_KEY must be set when DEBUG is off.')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS') or (['localhost', '127.0.0.1', 'testserver'] if DEBUG else [])
+CSRF_TRUSTED_ORIGINS = env('DJANGO_CSRF_TRUSTED_ORIGINS')
+ALLOW_REGISTRATION = env('DJANGO_ALLOW_REGISTRATION')
 
 
 # Application definition
@@ -41,13 +54,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third-party apps
-    'rest_framework',
     'crispy_forms',
-    'crispy_bootstrap4',
-    'corsheaders',
-    'simple_history',
+    'crispy_bootstrap5',
     
     # Local apps
+    'farm_management_system',
     'accounts',
     'land_management',
     'crop_management',
@@ -58,18 +69,18 @@ INSTALLED_APPS = [
     'compliance',
 ]
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'farm_management_system.urls'
@@ -87,6 +98,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'farm_management_system.context.site',
             ],
         },
     },
@@ -99,11 +111,9 @@ WSGI_APPLICATION = 'farm_management_system.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
 }
+DATABASES['default']['CONN_MAX_AGE'] = 60
 
 
 # Password validation
@@ -137,103 +147,67 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files configuration
+# Static & media files
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
+if DEBUG:
+    STORAGES['staticfiles'] = {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'}
 
-# Media files configuration
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Leaflet configuration
-LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (0.0, 36.0),  # Kenya's approximate center
-    'DEFAULT_ZOOM': 6,
-    'MIN_ZOOM': 3,
-    'MAX_ZOOM': 18,
-    'ATTRIBUTION_PREFIX': 'Farm Management System',
-}
-
-# Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+# Email
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = env.int('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER or 'webmaster@localhost')
+EMAIL_BACKEND = (
+    'django.core.mail.backends.smtp.EmailBackend'
+    if EMAIL_HOST_USER
+    else 'django.core.mail.backends.console.EmailBackend'
+)
 
-# For development, you can use the console backend instead
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-# Logging Configuration
+# Logging: stdout only (12-factor); the platform collects it.
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
+        'verbose': {'format': '{levelname} {asctime} {name} {message}', 'style': '{'},
     },
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'logs/debug.log',
-            'formatter': 'verbose',
-        },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'verbose'},
     },
-    'loggers': {
-        'django': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'accounts': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
+    'root': {'handlers': ['console'], 'level': env('DJANGO_LOG_LEVEL', default='INFO')},
 }
 
-# Authentication settings
+# Authentication
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 LOGIN_URL = 'accounts:login'
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24
 
-# REST Framework settings
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10,
-}
-
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-]
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+# Security hardening (production only)
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = env('DJANGO_SECURE_SSL')
+    SESSION_COOKIE_SECURE = env('DJANGO_SECURE_SSL')
+    CSRF_COOKIE_SECURE = env('DJANGO_SECURE_SSL')
+    SECURE_HSTS_SECONDS = 31536000 if env('DJANGO_SECURE_SSL') else 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env('DJANGO_SECURE_SSL')
+    SECURE_REDIRECT_EXEMPT = [r'^healthz/$']
+SESSION_COOKIE_HTTPONLY = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'same-origin'
+X_FRAME_OPTIONS = 'DENY'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# HSTS preload is a deliberate, hard-to-undo opt-in; leave it to the operator.
+SILENCED_SYSTEM_CHECKS = ['security.W021']

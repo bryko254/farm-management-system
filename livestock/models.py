@@ -25,7 +25,7 @@ class Animal(models.Model):
     ]
 
     # Basic Information
-    tag_number = models.CharField(max_length=50, unique=True)
+    tag_number = models.CharField(max_length=50)
     name = models.CharField(max_length=100, blank=True)
     species = models.CharField(max_length=20, choices=SPECIES_CHOICES)
     breed = models.CharField(max_length=100)
@@ -52,13 +52,20 @@ class Animal(models.Model):
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_active = models.BooleanField(default=True)  # Set default to True
+    is_active = models.BooleanField(default=True)  # False = soft-deleted
 
     def __str__(self):
         return f"{self.tag_number} - {self.name or self.species}"
 
     class Meta:
         ordering = ['tag_number']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['owner', 'tag_number'],
+                condition=models.Q(is_active=True),
+                name='unique_active_tag_per_owner',
+            ),
+        ]
 
 
 class HealthRecord(models.Model):

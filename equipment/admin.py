@@ -1,3 +1,10 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Equipment
+
+
+@admin.register(Equipment)
+class EquipmentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'condition', 'next_maintenance', 'owner')
+    list_filter = ('condition',)
+    search_fields = ('name',)

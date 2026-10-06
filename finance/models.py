@@ -17,7 +17,7 @@ class Category(models.Model):
     
     class Meta:
         verbose_name_plural = 'Categories'
-        ordering = ['name']
+        ordering = ['type', 'name']
         
     def __str__(self):
         return f"{self.name} ({self.get_type_display()})"
@@ -80,6 +80,7 @@ class Budget(models.Model):
         """Calculate how much has been spent in this budget period"""
         return Transaction.objects.filter(
             owner=self.owner,
+            type='EXPENSE',
             category=self.category,
             date__range=(self.start_date, self.end_date)
         ).aggregate(total=models.Sum('amount'))['total'] or 0
@@ -91,5 +92,5 @@ class Budget(models.Model):
     def get_spent_percentage(self):
         spent_amount = self.get_spent_amount()
         if self.amount > 0:
-            return (spent_amount / self.amount) * 100
+            return min((spent_amount / self.amount) * 100, 100)
         return 0

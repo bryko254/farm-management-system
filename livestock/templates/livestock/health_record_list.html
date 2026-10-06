@@ -32,10 +32,10 @@
                     <td>{{ record.animal.name }}</td>
                     <td>{{ record.date }}</td>
                     <td>{{ record.get_record_type_display }}</td>
-                    <td>{{ record.description }}</td>
+                    <td>{{ record.condition }}</td>
                     <td>{{ record.treatment }}</td>
-                    <td>{{ record.veterinarian }}</td>
-                    <td>${{ record.cost }}</td>
+                    <td>{{ record.vet_name }}</td>
+                    <td>KES {{ record.cost }}</td>
                     <td>
                         <div class="btn-group" role="group">
                             <a href="{% url 'livestock:edit_health_record' record.id %}" class="btn btn-sm btn-outline-primary">

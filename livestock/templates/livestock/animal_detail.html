@@ -105,7 +105,7 @@
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Health Records</h5>
-                    <a href="{% url 'livestock:add_health_record' %}" class="btn btn-primary btn-sm">
+                    <a href="{% url 'livestock:add_health_record' %}?animal={{ animal.pk }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Add Health Record
                     </a>
                 </div>
@@ -143,7 +143,7 @@
             <div class="card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Recent Production Records</h5>
-                    <a href="{% url 'livestock:production_record_create' animal_pk=animal.pk %}" class="btn btn-primary btn-sm">
+                    <a href="{% url 'livestock:add_production_record' %}?animal={{ animal.pk }}" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Add Production Record
                     </a>
                 </div>
@@ -195,7 +195,7 @@
 
                         {% if animal.purchase_price %}
                         <dt class="col-sm-5">Purchase Price</dt>
-                        <dd class="col-sm-7">${{ animal.purchase_price }}</dd>
+                        <dd class="col-sm-7">KES {{ animal.purchase_price }}</dd>
                         {% endif %}
 
                         {% if animal.supplier %}

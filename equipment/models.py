@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
+from django.utils import timezone
 
-# Create your models here.
 
 class Equipment(models.Model):
     CONDITION_CHOICES = [
@@ -18,12 +18,17 @@ class Equipment(models.Model):
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default='good')
     last_maintenance = models.DateField(null=True, blank=True)
     next_maintenance = models.DateField(null=True, blank=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name_plural = 'equipment'
 
     def __str__(self):
         return self.name
 
-    class Meta:
-        ordering = ['-created_at']
+    @property
+    def maintenance_overdue(self):
+        return bool(self.next_maintenance and self.next_maintenance < timezone.localdate())
